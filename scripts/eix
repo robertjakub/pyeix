@@ -1,0 +1,168 @@
+#!/usr/bin/env python
+# coding=utf-8
+
+from __future__ import print_function
+import sys
+import logging
+import json
+import click
+from pyeix.eixschema import EuroIXSchema
+from terminaltables import AsciiTable
+
+
+class cliconfig(object):
+    def __init__(self):
+        self.verbose = False
+
+
+pass_config = click.make_pass_decorator(cliconfig, ensure=True)
+
+
+@click.group()
+@click.option('-v', '--verbose', count=True)
+@pass_config
+def cli(config, verbose):
+    config.verbose = verbose
+
+
+@cli.command()
+@click.argument('jsonfile', type=click.File('r'))
+@pass_config
+def ixps(config, jsonfile):
+    logger = logging.getLogger('ixps')
+    eixschema = EuroIXSchema()
+    eixschema.load_data(json.load(jsonfile))
+    ctable = [['ixp_id', 'ixf_id', 'country', 'shorty', 'name', 'url']]
+    for i in eixschema.get_ixps():
+        ixpid = i['ixp_id']
+        ixfid = i['ixf_id']
+        country = i['country'] if 'country' in i else ''
+        ixpname = i['name'] if 'name' in i else ''
+        url = i['url']
+        addon = [ixpid, ixfid, country, i['shortname'], ixpname, url]
+        ctable.append(addon)
+    print(AsciiTable(ctable, 'ixps').table)
+
+
+@cli.command()
+@click.argument('jsonfile', type=click.File('r'))
+@click.option('--ixp_id', '-i', default=None, type=int)
+@pass_config
+def vlans(config, jsonfile, ixp_id):
+    logger = logging.getLogger('ixp_vlans')
+    eixschema = EuroIXSchema()
+    eixschema.load_data(json.load(jsonfile))
+    ctable = [['ixp_id', 'vlan_id', 'ipv4', 'ipv6', 'name']]
+    for i in eixschema.get_vlans(ixp_id):
+        ipv4 = None
+        ipv6 = None
+        if i['ipv4'] is not None:
+            ipv4 = '{}/{}'.format(i['ipv4']['prefix'],
+                                  i['ipv4']['mask_length'])
+        if i['ipv6'] is not None:
+            ipv6 = '{}/{}'.format(i['ipv6']['prefix'],
+                                  i['ipv6']['mask_length'])
+        addon = [i['ixp_id'], i['vlan_id'], ipv4, ipv6, i['name']]
+        ctable.append(addon)
+    print(AsciiTable(ctable, 'vlans').table)
+
+
+@cli.command()
+@click.argument('ixp_id', default=None, type=int)
+@click.argument('jsonfile', type=click.File('r'))
+@pass_config
+def contacts(config, jsonfile, ixp_id):
+    logger = logging.getLogger('ixp_vlans')
+    eixschema = EuroIXSchema()
+    eixschema.load_data(json.load(jsonfile))
+    ctable = [['type', 'contact_hours', 'phone', 'email']]
+    for c in eixschema.get_ixp_contacts(ixp_id):
+        addon = [c['type'], c['contact_hours'], c['phone'], c['email']]
+        ctable.append(addon)
+    print(AsciiTable(ctable, 'contacts').table)
+
+
+@cli.command()
+@click.argument('ixp_id', default=None, type=int)
+@click.argument('jsonfile', type=click.File('r'))
+@pass_config
+def switch(config, jsonfile, ixp_id):
+    logger = logging.getLogger('ixp_vlans')
+    eixschema = EuroIXSchema()
+    eixschema.load_data(json.load(jsonfile))
+    ctable = [['id', 'name', 'city', 'country', 'colo']]
+    for i in eixschema.get_ixp_switches(ixp_id):
+        addon = [i['switch_id'], i['name'], i['city'], i['country'], i['colo']]
+        ctable.append(addon)
+    print(AsciiTable(ctable, 'switches').table)
+
+
+@cli.command()
+@click.argument('ixp_id', default=None, type=int)
+@click.argument('jsonfile', type=click.File('r'))
+@pass_config
+def policy(config, jsonfile, ixp_id):
+    logger = logging.getLogger('ixp_vlans')
+    eixschema = EuroIXSchema()
+    eixschema.load_data(json.load(jsonfile))
+    print(eixschema.get_ixp_policies(ixp_id))
+
+
+@cli.command()
+@click.argument('jsonfile', type=click.File('r'))
+@click.option('--vlan_id', '-l', default=None, type=int)
+@click.option('--ixp_id', '-i', default=None, type=int, required=True)
+@click.option('--routeserver', '-r', default=False, is_flag=True)
+@click.option('--policy', '-p', type=str)
+@pass_config
+def members(config, jsonfile, ixp_id, vlan_id, routeserver, policy):
+    logger = logging.getLogger('ixp_vlans')
+    eixschema = EuroIXSchema()
+    eixschema.load_data(json.load(jsonfile))
+    ctable = [['asnum', 'name', 'state', 'peering_policy',
+               'member_type', 'vlan', 'ipv4', 'ipv6']]
+    for i in eixschema.get_members(ixp_id, vlan_id, routeserver):
+        peering_policy = i['peering_policy']
+        if peering_policy is not None:
+            peering_policy = peering_policy.encode('utf-8')
+        else:
+            peering_policy = ''
+        if policy is not None and peering_policy != policy:
+            continue
+        member_type = i['member_type']
+        if member_type is not None:
+            member_type = member_type.encode('utf-8')
+        # if connections['state'] != 'active':
+        #    continue
+        for connection in i['connections']:
+            raw_vlans = connection['vlan_list']
+            state = connection['state']
+
+            def parse_rawip(raw):
+                rawip = []
+                for ip in raw:
+                    rawip.append(ip['address'])
+                return ', '.join(rawip)
+
+            def parse_vlanip(raw):
+                rawip = {}
+                for ipv in (4, 6):
+                    ipver = "ipv{}".format(ipv)
+                    rawip[ipver] = ''
+                    if ipver in raw:
+                        rawip[ipver] = parse_rawip(raw[ipver])
+                return (rawip['ipv4'], rawip['ipv6'])
+
+            for vlan in raw_vlans:
+                ipv4, ipv6 = parse_vlanip(raw_vlans[vlan])
+                addon = [
+                    i['asnum'], i['name'], state, peering_policy, member_type, vlan,
+                    str(ipv4), str(ipv6)
+                ]
+            ctable.append(addon)
+    print(AsciiTable(ctable, 'connections').table)
+
+
+if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO)
+    sys.exit(cli())

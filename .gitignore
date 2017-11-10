@@ -1,0 +1,8 @@
+virtualenv
+.vscode
+*.pyc
+__pycache__
+build
+*egg-info*
+dist
+temp
