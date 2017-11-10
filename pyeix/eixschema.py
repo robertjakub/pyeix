@@ -45,18 +45,20 @@ class EuroIXSchema(object):
         '0.6': 'ixp-member-list-0.6.schema.json'
     }
 
-    def __init__(self):
+    def __init__(self, input=None, schema=None):
         self.raw_data = None
         self.timestamp = None
         self.version = None
         self.schema = None
+        if input is not None:
+            self.load_data(input, schema)
 
     def _load_schema(self, schema=None):
         if schema is not None and schema not in self.schemas:
             raise EIXError(
                 "The requested version of the JSON schema is not known yet.")
         try:
-            pkg_path = pkg_resources.resource_filename("p2eix", 'schema')
+            pkg_path = pkg_resources.resource_filename("pyeix", 'schema')
             with open("{}/{}".format(pkg_path, self.schemas[schema])) as data_file:
                 self.schema = json.load(data_file)
         except:
@@ -164,6 +166,9 @@ class EuroIXSchema(object):
             retval.append(addon)
         return retval
 
+    def list_ixps(self):
+        return self.get_ixps()
+
     def get_vlans(self, ixp_id=None):
         data = self.raw_data
         ixp_list = self._get_item("ixp_list", data, list)
@@ -201,6 +206,9 @@ class EuroIXSchema(object):
             )
             retval.append(addon)
         return retval
+
+    def list_vlans(self, ixp_id=None):
+        return self.get_vlans(ixp_id)
 
     def get_ixp_contacts(self, ixp_id):
         data = self.raw_data
@@ -359,6 +367,41 @@ class EuroIXSchema(object):
             )
             raw_members.append(raw)
         return raw_members
+
+    def list_members(self, ixp_id=None, vlan_id=None):
+        retval = []
+        data = self.raw_data
+        member_list = self._get_item('member_list', data, list)
+        for member in member_list:
+            name = self._get_item('name', member, str, True).encode('utf-8').strip()
+            retval.append(name)
+        return list(set(retval))
+
+    def list_asns(self, ixp_id=None, vlan_id=None):
+        retval = []
+        data = self.raw_data
+        member_list = self._get_item('member_list', data, list)
+        for member in member_list:
+            asnum = self._get_item('asnum', member, int)
+            retval.append(asnum)
+        return list(set(retval))
+
+    def list_ip(self, proto='ipv4', ixp_id=None, vlan_id=None):
+        """
+        List IPs at IXP
+        """
+        assert proto == 'ipv4' or proto == 'ipv6'
+        retval = []
+        data = self.raw_data
+        member_list = self._get_item('member_list', data, list)
+        for member in member_list:
+            connection_list = self._get_item("connection_list", member, list)
+            for connection in connection_list:
+                vlan_list = self._get_item("vlan_list", connection, list, True)
+                for vlan in vlan_list:
+                    if proto in vlan:
+                        retval.append(vlan[proto]['address'])
+        return list(set(retval))
 
 
 if __name__ == "__main__":
