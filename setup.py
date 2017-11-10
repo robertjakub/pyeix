@@ -1,11 +1,7 @@
-import os
-from os.path import abspath, dirname, join
 from setuptools import find_packages, setup
 
 requirements = open('requirements.txt').read().split("\n")
-current_dir = dirname(abspath(__file__))
-exec(open(join(current_dir, "pyeix/__init__.py")).read())
-version = __version__
+version = "0.1"
 
 setup(
     name='pyeix',
@@ -13,7 +9,6 @@ setup(
     author='robert jakub',
     author_email='rj@project2.pl',
     description='eix schema tools',
-    long_description='',
     license='MIT',
     scripts=['scripts/eix'],
     classifiers=[
