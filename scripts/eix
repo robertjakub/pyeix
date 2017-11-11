@@ -10,25 +10,13 @@ from pyeix.eixschema import EuroIXSchema
 from terminaltables import AsciiTable
 
 
-class cliconfig(object):
-    def __init__(self):
-        self.verbose = False
-
-
-pass_config = click.make_pass_decorator(cliconfig, ensure=True)
-
-
 @click.group()
-@click.option('-v', '--verbose', count=True)
-@pass_config
-def cli(config, verbose):
-    config.verbose = verbose
-
+def cli():
+    pass
 
 @cli.command()
-@click.argument('jsonfile', type=click.File('r'))
-@pass_config
-def ixps(config, jsonfile):
+@click.option('--jsonfile', '-j', type=click.File('r'), required=True)
+def ixps(jsonfile):
     logger = logging.getLogger('ixps')
     eixschema = EuroIXSchema()
     eixschema.load_data(json.load(jsonfile))
@@ -45,10 +33,9 @@ def ixps(config, jsonfile):
 
 
 @cli.command()
-@click.argument('jsonfile', type=click.File('r'))
+@click.option('--jsonfile', '-j', type=click.File('r'), required=True)
 @click.option('--ixp_id', '-i', default=None, type=int)
-@pass_config
-def vlans(config, jsonfile, ixp_id):
+def vlans(jsonfile, ixp_id):
     logger = logging.getLogger('ixp_vlans')
     eixschema = EuroIXSchema()
     eixschema.load_data(json.load(jsonfile))
@@ -68,10 +55,9 @@ def vlans(config, jsonfile, ixp_id):
 
 
 @cli.command()
-@click.argument('ixp_id', default=None, type=int)
-@click.argument('jsonfile', type=click.File('r'))
-@pass_config
-def contacts(config, jsonfile, ixp_id):
+@click.option('--jsonfile', '-j', type=click.File('r'), required=True)
+@click.option('--ixp_id', '-i', default=None, type=int, required=True)
+def contacts(jsonfile, ixp_id):
     logger = logging.getLogger('ixp_vlans')
     eixschema = EuroIXSchema()
     eixschema.load_data(json.load(jsonfile))
@@ -83,10 +69,9 @@ def contacts(config, jsonfile, ixp_id):
 
 
 @cli.command()
-@click.argument('ixp_id', default=None, type=int)
-@click.argument('jsonfile', type=click.File('r'))
-@pass_config
-def switch(config, jsonfile, ixp_id):
+@click.option('--jsonfile', '-j', type=click.File('r'), required=True)
+@click.option('--ixp_id', '-i', default=None, type=int, required=True)
+def switch(jsonfile, ixp_id):
     logger = logging.getLogger('ixp_vlans')
     eixschema = EuroIXSchema()
     eixschema.load_data(json.load(jsonfile))
@@ -98,10 +83,9 @@ def switch(config, jsonfile, ixp_id):
 
 
 @cli.command()
-@click.argument('ixp_id', default=None, type=int)
-@click.argument('jsonfile', type=click.File('r'))
-@pass_config
-def policy(config, jsonfile, ixp_id):
+@click.option('--jsonfile', '-j', type=click.File('r'), required=True)
+@click.option('--ixp_id', '-i', default=None, type=int, required=True)
+def policy(jsonfile, ixp_id):
     logger = logging.getLogger('ixp_vlans')
     eixschema = EuroIXSchema()
     eixschema.load_data(json.load(jsonfile))
@@ -109,13 +93,12 @@ def policy(config, jsonfile, ixp_id):
 
 
 @cli.command()
-@click.argument('jsonfile', type=click.File('r'))
+@click.option('--jsonfile', '-j', type=click.File('r'), required=True)
 @click.option('--vlan_id', '-l', default=None, type=int)
 @click.option('--ixp_id', '-i', default=None, type=int, required=True)
 @click.option('--routeserver', '-r', default=False, is_flag=True)
 @click.option('--policy', '-p', type=str)
-@pass_config
-def members(config, jsonfile, ixp_id, vlan_id, routeserver, policy):
+def members(jsonfile, ixp_id, vlan_id, routeserver, policy):
     logger = logging.getLogger('ixp_vlans')
     eixschema = EuroIXSchema()
     eixschema.load_data(json.load(jsonfile))
