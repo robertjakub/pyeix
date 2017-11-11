@@ -14,6 +14,7 @@ from terminaltables import AsciiTable
 def cli():
     pass
 
+
 @cli.command()
 @click.option('--jsonfile', '-j', type=click.File('r'), required=True)
 def ixps(jsonfile):
@@ -135,9 +136,8 @@ def members(jsonfile, ixp_id, vlan_id, routeserver, policy):
             for vlan in raw_vlans:
                 ipv4, ipv6 = parse_vlanip(raw_vlans[vlan])
                 addon = [
-                    i['asnum'], i['name'], state, peering_policy, member_type, vlan,
-                    str(ipv4), str(ipv6)
-                ]
+                    i['asnum'], i['name'], state, peering_policy,
+                    member_type, vlan, str(ipv4), str(ipv6)]
             ctable.append(addon)
     print(AsciiTable(ctable, 'connections').table)
 

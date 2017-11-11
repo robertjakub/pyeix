@@ -15,9 +15,10 @@ ERR_EIXError = {'code': 500, 'title': 'EuroIX Error', 'more_info': ""}
 ERR_EIXSchema = {
     'code': 500,
     'title': 'EuroIX Schema Error',
-    'more_info': ("It's possible that the JSON schema used by the IX to export "
-                  "its members list is not aligned with the one recognized by "
-                  "this version of the program, or that it contains errors.")
+    'more_info': ("It's possible that the JSON schema used by the "
+                  "IX to export its members list is not aligned "
+                  "with the one recognized by this version of "
+                  "the program, or that it contains errors.")
 }
 
 
@@ -57,11 +58,14 @@ class EuroIXSchema(object):
         if schema is not None and schema not in self.schemas:
             raise EIXError(
                 "The requested version of the JSON schema is not known yet.")
+        if schema is None:
+            raise EIXError("The schema version is None.")
         try:
             pkg_path = pkg_resources.resource_filename("pyeix", 'schema')
-            with open("{}/{}".format(pkg_path, self.schemas[schema])) as data_file:
+            sf = self.schemas[schema]
+            with open("{}/{}".format(pkg_path, sf)) as data_file:
                 self.schema = json.load(data_file)
-        except:
+        except Exception as e:
             raise EIXError("Can't load the EuroIX Schema File")
 
     def load_data(self, input_object, schema=None):
@@ -79,7 +83,7 @@ class EuroIXSchema(object):
                 try:
                     with open(input_object) as data_file:
                         raw = data_file.read().decode('utf-8')
-                except:
+                except Exception as e:
                     raise EIXError(
                         "Error reading file {}".format(input_object))
         else:
@@ -120,7 +124,8 @@ class EuroIXSchema(object):
 
             raise EIXSchemaError("Invalid type for {} with value '{}': "
                                  "it is {}, should be {}".format(
-                                     vname, v, str(type(v)), str(expected_type)))
+                                     vname, v, str(type(v)),
+                                     str(expected_type)))
         return v
 
     @staticmethod
@@ -367,7 +372,8 @@ class EuroIXSchema(object):
         data = self.raw_data
         member_list = self._get_item('member_list', data, list)
         for member in member_list:
-            name = self._get_item('name', member, str, True).encode('utf-8').strip()
+            name = self._get_item('name', member, str,
+                                  True).encode('utf-8').strip()
             retval.append(name)
         return list(set(retval))
 
