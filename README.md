@@ -4,7 +4,7 @@ A Python parser to the Euro-IX JSON schema
 Install
 =======
 
-To install, execute: [in progress]
+To install, execute: [in the future, use the source Luke... ]
 
 ```
 pip install pyeix
@@ -22,13 +22,13 @@ Import an IXP schema json, given a source URL to the JSON schema [or loaded dict
 
 ### List IXPs
 ```python
->>> eixschema.list_ixps()
+>>> eixschema.get_ixps()
 [{'name': u'BCIX Management GmbH', 'url': u'https://www.bcix.de/', 'country': u'DE', 'shortname': u'BCIX', 'ixf_id': 21, 'stats_api': None, 'ixp_id': 1}]
 ```
 
 ### List Vlans 
 ```python
->>> eixschema.list_vlans()
+>>> eixschema.get_vlans()
 [{'name': u'BCIX Peering LAN', 'ipv6': {'prefix': u'2001:7f8:19:1::', 'mask_length': 64}, 'ixp_id': 1, 'vlan_id': 1, 'ipv4': {'prefix': u'193.178.185.0', 'mask_length': 25}}]
 ```
 
