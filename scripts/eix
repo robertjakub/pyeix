@@ -18,8 +18,7 @@ def cli():
 @click.option('--jsonfile', '-j', type=click.File('r'), required=True)
 def ixps(jsonfile):
     logger = logging.getLogger('ixps')
-    eixschema = EuroIXSchema()
-    eixschema.load_data(json.load(jsonfile))
+    eixschema = EuroIXSchema(json.load(jsonfile))
     ctable = [['ixp_id', 'ixf_id', 'country', 'shorty', 'name', 'url']]
     for i in eixschema.get_ixps():
         ixpid = i['ixp_id']
@@ -37,8 +36,7 @@ def ixps(jsonfile):
 @click.option('--ixp_id', '-i', default=None, type=int)
 def vlans(jsonfile, ixp_id):
     logger = logging.getLogger('ixp_vlans')
-    eixschema = EuroIXSchema()
-    eixschema.load_data(json.load(jsonfile))
+    eixschema = EuroIXSchema(json.load(jsonfile))
     ctable = [['ixp_id', 'vlan_id', 'ipv4', 'ipv6', 'name']]
     for i in eixschema.get_vlans(ixp_id):
         ipv4 = None
@@ -59,8 +57,7 @@ def vlans(jsonfile, ixp_id):
 @click.option('--ixp_id', '-i', default=None, type=int, required=True)
 def contacts(jsonfile, ixp_id):
     logger = logging.getLogger('ixp_vlans')
-    eixschema = EuroIXSchema()
-    eixschema.load_data(json.load(jsonfile))
+    eixschema = EuroIXSchema(json.load(jsonfile))
     ctable = [['type', 'contact_hours', 'phone', 'email']]
     for c in eixschema.get_ixp_contacts(ixp_id):
         addon = [c['type'], c['contact_hours'], c['phone'], c['email']]
@@ -73,8 +70,7 @@ def contacts(jsonfile, ixp_id):
 @click.option('--ixp_id', '-i', default=None, type=int, required=True)
 def switch(jsonfile, ixp_id):
     logger = logging.getLogger('ixp_vlans')
-    eixschema = EuroIXSchema()
-    eixschema.load_data(json.load(jsonfile))
+    eixschema = EuroIXSchema(json.load(jsonfile))
     ctable = [['id', 'name', 'city', 'country', 'colo']]
     for i in eixschema.get_ixp_switches(ixp_id):
         addon = [i['switch_id'], i['name'], i['city'], i['country'], i['colo']]

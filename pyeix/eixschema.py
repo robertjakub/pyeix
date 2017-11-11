@@ -166,9 +166,6 @@ class EuroIXSchema(object):
             retval.append(addon)
         return retval
 
-    def list_ixps(self):
-        return self.get_ixps()
-
     def get_vlans(self, ixp_id=None):
         data = self.raw_data
         ixp_list = self._get_item("ixp_list", data, list)
@@ -206,9 +203,6 @@ class EuroIXSchema(object):
             )
             retval.append(addon)
         return retval
-
-    def list_vlans(self, ixp_id=None):
-        return self.get_vlans(ixp_id)
 
     def get_ixp_contacts(self, ixp_id):
         data = self.raw_data
@@ -402,19 +396,3 @@ class EuroIXSchema(object):
                     if proto in vlan:
                         retval.append(vlan[proto]['address'])
         return list(set(retval))
-
-
-if __name__ == "__main__":
-    eixschema = EuroIXSchema()
-    try:
-        eixschema.load_data('ixp-member-list.json')
-    except EIXError as e:
-        print(e.description)
-    print(eixschema.timestamp)
-    print(eixschema.version)
-    for ixp in eixschema.get_ixps():
-        print(ixp)
-    try:
-        print(eixschema.get_ixp_contacts(42))
-    except EIXError as e:
-        print(e.description)
