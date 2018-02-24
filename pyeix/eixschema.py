@@ -43,7 +43,8 @@ class EuroIXSchema(object):
     schemas = {
         '0.4': 'ixp-member-list-0.4.schema.json',
         '0.5': 'ixp-member-list-0.5.schema.json',
-        '0.6': 'ixp-member-list-0.6.schema.json'
+        '0.6': 'ixp-member-list-0.6.schema.json',
+        '0.7': 'ixp-member-list-0.7.schema.json'
     }
 
     def __init__(self, input=None, schema=None):
