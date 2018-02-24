@@ -1,7 +1,7 @@
 from setuptools import find_packages, setup
 
 requirements = open('requirements.txt').read().split("\n")
-version = "0.1"
+version = "0.2"
 
 setup(
     name='pyeix',
